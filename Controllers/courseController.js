@@ -21,28 +21,28 @@ const courseController = {
             })
         }
     },
-    getbyid: async (req, res) => {
+    // getbyid: async (req, res) => {
 
-        try {
-            let id = req.params.id
+    //     try {
+    //         let id = req.params.id
 
-            let result = await courseModel.findById(id)
-            res.send({
-                isSuccessfull: true,
-                data: result,
-                message: "",
-            })
-            // let obj = courses.find((x) => x.id == id)
+    //         let result = await courseModel.findById(id)
+    //         res.send({
+    //             isSuccessfull: true,
+    //             data: result,
+    //             message: "",
+    //         })
+    //         // let obj = courses.find((x) => x.id == id)
 
 
-        } catch (error) {
-            res.send({
-                isSuccessfull: false,
-                data: null,
-                message: "No Data Found",
-            })
-        }
-    },
+    //     } catch (error) {
+    //         res.send({
+    //             isSuccessfull: false,
+    //             data: null,
+    //             message: "No Data Found",
+    //         })
+    //     }
+    // },
     add: async (req, res) => {
         try {
             let { title, description } = req.body
