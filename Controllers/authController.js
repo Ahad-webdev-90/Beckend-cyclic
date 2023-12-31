@@ -54,7 +54,7 @@ const AuthController = {
                     if (correctPassword) {
                         const token = jwt.sign({ ...userExist }, process.env.SECRET_KEY)
                         const data = {
-                            email: userExist.email,
+                            userExist,
                             token
                         }
                         res.status(200).send(Send(true, "Data Added Successfully", { user: data }))

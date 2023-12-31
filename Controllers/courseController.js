@@ -1,5 +1,6 @@
 const { Send } = require("../Helper/courseHelper");
 const courseModel = require("../models/courseModel");
+const Team = require('../models/teamModel')
 
 const courseController = {
     get: async (req, res) => {
@@ -80,6 +81,40 @@ const courseController = {
             })
         }
 
+    },
+    assignProject: async (req, res) => {
+        try {
+            const { title, description, team, } = req.body;
+            const checkTeam = await Team.findById(team);
+            if (!checkTeam) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Team not found',
+                });
+            }
+            const newTask = await courseModel.create({
+                title,
+                description,
+                team,
+            });
+
+            // Update team ke tasks array mein newTask ko push karein
+            await Team.findByIdAndUpdate(team, { $push: { courses: newTask } });
+
+            // Update user ke tasks array mein newTask ko push karein
+            return res.status(201).json({
+                success: true,
+                message: 'Task successfully assign kiya gaya hai',
+                task: newTask,
+            });
+        } catch (error) {
+            console.log(error)
+            res.status(500).json({
+                success: false,
+                message: 'Task assign karne mein kuch problem aayi hai',
+                error: error.message,
+            });
+        }
     },
     edit: async (req, res) => {
         try {

@@ -14,11 +14,6 @@ const courseSchema = mongoose.Schema({
         enum: ['Pending', 'Completed'],
         default: 'Pending'
     },
-    assignedTo:
-    {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'authusers'
-    },
     team: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Team'

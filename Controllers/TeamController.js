@@ -35,12 +35,8 @@ const TeamController = {
   },
   getTeamMembers: async (req, res) => {
     try {
-      // Extracting teamId from req.params
-      const teamId  = req.params.id;
-      // console.log('Team ID:', teamId);
-
-      // Using the correct teamId to find the team
-      const team = await Team.findById(teamId);
+      const { teamId } = req.params;
+      const team = await Team.findById(teamId).populate("members  messages.sender")
 
       if (!team) {
         return res.status(404).json({
@@ -48,13 +44,33 @@ const TeamController = {
           message: 'Team not found',
         });
       }
+      const members = team.members.map(member => ({
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        // Add other member properties as needed
+      }));
 
-      // Fetching member details using the team.members array
+      const messages = team.messages.map(message => ({
+        content: message.content,
+        createdAt: message.createdAt,
+        sender: {
+          _id: message.sender._id,
+          firstName: message.sender.firstName,
+          lastName: message.sender.lastName
+          // Add other sender properties as needed
+        },
+      }));
       const memberDetails = await AuthModel.find({ _id: { $in: team.members } });
 
       res.status(200).json({
         success: true,
-        members: memberDetails,
+        team: {
+          name: team.name,
+          members,
+          tasks: team.tasks, // Include other team properties as needed
+          messages,
+        },
       });
     } catch (error) {
       res.status(500).json({
@@ -64,16 +80,19 @@ const TeamController = {
       });
     }
   },
-
   getAllTeamsWithMembers: async (req, res) => {
     try {
-
       // Get all teams with members details
       const teams = await Team.find().populate({
-
         path: 'members',
         select: 'firstName lastName email userStatus createdAt updatedAt' // Include the fields you need
-      });
+      }).populate({
+        path: 'courses',
+        select: 'title description taskStatus updatedAt createdAt _id',
+      }).populate({
+        path: 'messages.sender',
+        select: 'firstName lastName email password createdAt updatedAt',
+      })
       res.status(200).json({
         success: true,
         message: 'All teams with members fetched successfully',
@@ -86,8 +105,29 @@ const TeamController = {
         error: error.message,
       });
     }
-  }
+  },
+  sendMessage: async (io, data) => {
+    try {
+      const { team, senderId, content } = data;
 
+      const message = {
+        sender: senderId,
+        content: content,
+        createdAt: new Date()
+      };
+      const updatedTeam = await Team.findOneAndUpdate(
+        { _id: team },
+        { $push: { messages: message } },
+        { new: true }
+      )
+
+      io.to(team).emit('receiveMessage', { team: team, message: message });
+      return { success: true, message: 'Message sent', updatedTeam: updatedTeam };
+    } catch (error) {
+      console.error(error);
+      return { success: false, message: 'Error sending message' };
+    }
+  },
 };
 
 module.exports = TeamController;

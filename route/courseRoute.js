@@ -145,6 +145,8 @@ route.get("/", courseController.get)
 route.get("/:id", courseController.getbyid)
 // Post
 route.post("/", courseController.add)
+// post
+route.post("/assign", courseController.assignProject)
 // Put
 route.put('/:id', courseController.edit)
 // Delete
