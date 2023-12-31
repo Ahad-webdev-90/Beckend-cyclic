@@ -108,7 +108,7 @@ const TeamController = {
   },
   sendMessage: async (io, data) => {
     try {
-      const { team, senderId, content } = data;
+      const { teamId , senderId, content } = data;
 
       const message = {
         sender: senderId,
@@ -116,12 +116,12 @@ const TeamController = {
         createdAt: new Date()
       };
       const updatedTeam = await Team.findOneAndUpdate(
-        { _id: team },
+        { _id: teamId },
         { $push: { messages: message } },
         { new: true }
       )
 
-      io.to(team).emit('receiveMessage', { team: team, message: message });
+      io.to(team).emit('receiveMessage', { team: teamId, message: message });
       return { success: true, message: 'Message sent', updatedTeam: updatedTeam };
     } catch (error) {
       console.error(error);
